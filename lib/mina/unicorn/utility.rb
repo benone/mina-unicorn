@@ -8,7 +8,7 @@ module Mina
       # Otherwise run as default (:user) user.
       #
       def try_unicorn_user
-        "sudo -u #{unicorn_user}" if unicorn_user.kind_of?(String)
+        "sudo -u #{fetch(:unicorn_user)}" if fetch(:unicorn_user).kind_of?(String)
       end
 
       # Check if a remote process exists using its pid file
@@ -20,13 +20,13 @@ module Mina
       # Stale Unicorn process pid file
       #
       def old_unicorn_pid
-        "#{unicorn_pid}.oldbin"
+        "#{fetch(:unicorn_pid)}.oldbin"
       end
 
       # Command to check if Unicorn is running
       #
       def unicorn_is_running?
-        remote_process_exists?(unicorn_pid)
+        remote_process_exists?(fetch(:unicorn_pid))
       end
 
       # Command to check if stale Unicorn is running
@@ -37,7 +37,8 @@ module Mina
 
       # Get unicorn master process PID (using the shell)
       #
-      def get_unicorn_pid(pid_file=unicorn_pid)
+      def get_unicorn_pid(pid_file = nil)
+        pid_file ||= fetch(:unicorn_pid)
         "`cat #{pid_file}`"
       end
 
@@ -72,17 +73,17 @@ module Mina
       #
       def start_unicorn
         %Q%
-          if [ -e "#{unicorn_pid}" ]; then
-            if #{try_unicorn_user} kill -0 `cat #{unicorn_pid}` > /dev/null 2>&1; then
+          if [ -e "#{fetch(:unicorn_pid)}" ]; then
+            if #{try_unicorn_user} kill -0 `cat #{fetch(:unicorn_pid)}` > /dev/null 2>&1; then
               echo "-----> Unicorn is already running!";
               exit 0;
             fi;
 
-            #{try_unicorn_user} rm #{unicorn_pid};
+            #{try_unicorn_user} rm #{fetch(:unicorn_pid)};
           fi;
 
           echo "-----> Starting Unicorn...";
-          cd #{deploy_to}/#{current_path} && #{try_unicorn_user} BUNDLE_GEMFILE=#{bundle_gemfile} #{unicorn_cmd} -c #{unicorn_config} -E #{unicorn_env} -D;
+          cd #{fetch(:current_path)} && #{try_unicorn_user} BUNDLE_GEMFILE=#{fetch(:bundle_gemfile)} #{fetch(:unicorn_cmd)} -c #{fetch(:unicorn_config)} -E #{fetch(:unicorn_env)} -D;
         %
       end
 
