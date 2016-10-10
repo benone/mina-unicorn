@@ -93,7 +93,7 @@ module Mina
         %Q%
           #{duplicate_unicorn}
 
-          sleep #{unicorn_restart_sleep_time}; # in order to wait for the (old) pidfile to show up
+          sleep #{fetch(:unicorn_restart_sleep_time)}; # in order to wait for the (old) pidfile to show up
 
           if #{old_unicorn_is_running?}; then
             #{unicorn_send_signal('QUIT', get_old_unicorn_pid)};
